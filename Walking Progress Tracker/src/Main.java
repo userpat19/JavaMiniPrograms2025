@@ -85,6 +85,18 @@ public class Main {
 
     }
 
+    public static double Average_WeekSteps(Integer[] arr){
+
+        int sum = 0;
+
+        for(int x = 0; x < arr.length; x++){
+            sum += arr[x];
+        }
+
+        return (double) sum/7;
+
+    }
+
     public static void Main_Menu(){
 
         //example: steps_progress[0] = 90, this means that the user took 90 steps in monday(the first index of the array)
@@ -133,10 +145,28 @@ public class Main {
                     Display_Exercises_Data(steps_progress);
                     break;
                 case 3:
-                    System.out.println("Picked 3");
+                    terminator:{
+                        for(Integer num_step : steps_progress){
+                            if(num_step == null){
+                                System.out.println("Cannot display average steps this week. Some days or a day does not have a recorded step yet.");
+                                break terminator;
+                            }
+                        }
+                        double average = Average_WeekSteps(steps_progress);
+                        System.out.printf("Average step this week: %.2f", average);
+                        System.out.println();
+                    }
                     break;
                 case 4:
-                    System.out.println("Picked 4");
+                    String[] day_names = {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"};
+                    int highest = 0; // index
+
+                    for(int x = 1; x < steps_progress.length; x++){
+                        if(steps_progress[x] > steps_progress[highest]){
+                            highest = x;
+                        }
+                    }
+                    System.out.println("Best day: " + day_names[highest] + " with " + steps_progress[highest] + " steps.");
                     break;
                 case 5:
                     isRunning = false;
