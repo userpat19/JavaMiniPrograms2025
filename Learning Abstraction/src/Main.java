@@ -5,6 +5,7 @@ public class Main {
         Triangle triangle = new Triangle(20, 60);
         Rectangle rectangle = new Rectangle(10,15);
 
+
         circle.display();
         triangle.display();
         rectangle.display();

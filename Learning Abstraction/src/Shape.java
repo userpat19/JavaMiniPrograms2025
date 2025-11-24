@@ -1,5 +1,9 @@
 public abstract class Shape {
 
+    Shape(){
+
+    }
+
     abstract double area();
 
     void display(){
