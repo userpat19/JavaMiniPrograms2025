@@ -1,97 +1,175 @@
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.event.*;
 
 public class calc extends JFrame implements ActionListener {
 
     final JTextField display;
-    final JPanel buttonPanel;
-    private String currentInput = "";
-    private double result = 0;
-    private String lastOperator = "=";
+    final JLabel ansLabel;
+
+    private double firstNum = 0;
+    private String operator = "";
     private boolean startNewNumber = true;
 
     public calc() {
-        setTitle("Simple Calculator");
-        setSize(300, 400);
+        setTitle("Calculator");
+        setSize(350, 520);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setLayout(new BorderLayout());
+        setLayout(null);
+        getContentPane().setBackground(new Color(20, 20, 25));
 
-        display = new JTextField("0", 10);
-        display.setHorizontalAlignment(JTextField.RIGHT);
+        ansLabel = new JLabel("Ans: 0");
+        ansLabel.setBounds(220, 0, 200, 30);
+        ansLabel.setForeground(Color.WHITE);
+        add(ansLabel);
+
+        display = new JTextField("0");
+        display.setBounds(20, 30, 300, 60);
         display.setEditable(false);
-        add(display, BorderLayout.NORTH);
+        display.setFont(new Font("Arial", Font.BOLD, 36));
+        display.setBackground(new Color(210, 230, 210));
+        display.setHorizontalAlignment(SwingConstants.RIGHT);
+        add(display);
 
-        buttonPanel = new JPanel();
-        buttonPanel.setLayout(new GridLayout(4, 4));
+        JPanel panel = new JPanel();
+        panel.setBounds(20, 110, 300, 340);
+        panel.setLayout(new GridLayout(5, 4, 10, 10));
+        panel.setBackground(new Color(20, 20, 25));
+        add(panel);
 
-        String[] buttonLabels = {
-                "7", "8", "9", "/",
-                "4", "5", "6", "*",
+        String[] buttons = {
+                "7", "8", "9", "÷",
+                "4", "5", "6", "x",
                 "1", "2", "3", "-",
-                "0", ".", "=", "+"
+                "0", ".", "=", "+",
+                "C"
         };
 
-        for (String label : buttonLabels) {
-            JButton button = new JButton(label);
-            button.addActionListener(this);
-            buttonPanel.add(button);
-        }
+        for (String txt : buttons) {
+            JButton b = getJButton(txt);
 
-        add(buttonPanel, BorderLayout.CENTER);
+            b.addActionListener(this);
+            panel.add(b);
+        }
 
         setVisible(true);
     }
 
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(calc::new);
+    private JButton getJButton(String txt) {
+        JButton b = new JButton(txt);
+        b.setFont(new Font("Arial", Font.BOLD, 22));
+
+        if (txt.matches("[0-9.]")) {
+            b.setBackground(new Color(50, 50, 55));
+            b.setForeground(Color.WHITE);
+        } else if (txt.equals("=")) {
+            b.setBackground(new Color(255, 80, 70));
+            b.setForeground(Color.WHITE);
+        } else if (txt.equals("C")) {
+            b.setBackground(new Color(255, 110, 110));
+            b.setForeground(Color.WHITE);
+        } else {
+            b.setBackground(new Color(0, 180, 180));
+            b.setForeground(Color.BLACK);
+        }
+        return b;
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        String command = e.getActionCommand();
+        String cmd = e.getActionCommand();
 
-        if ("0123456789.".contains(command)) {
+        if (cmd.matches("[0-9]") || cmd.equals(".")) {
             if (startNewNumber) {
-                currentInput = command;
+                // avoid starting with multiple dots
+                if (cmd.equals(".")) {
+                    display.setText("0.");
+                } else {
+                    display.setText(cmd);
+                }
                 startNewNumber = false;
             } else {
-                currentInput += command;
+                // prevent multiple dots
+                if (cmd.equals(".") && display.getText().contains(".")) return;
+                display.setText(display.getText() + cmd);
             }
-            display.setText(currentInput);
-        } else if ("+-*/=".contains(command)) {
-            double number = Double.parseDouble(currentInput);
-            calculate(number);
-            lastOperator = command;
-            startNewNumber = true;
+            return;
         }
+
+        if (cmd.equals("C")) {
+            display.setText("0");
+            firstNum = 0;
+            operator = "";
+            ansLabel.setText("Ans: 0");
+            startNewNumber = true;
+            return;
+        }
+
+        if (cmd.equals("=")) {
+            calculate();
+            return;
+        }
+
+        // operator pressed (+, -, x, ÷)
+        try {
+            firstNum = Double.parseDouble(display.getText());
+        } catch (NumberFormatException ex) {
+            display.setText("Error");
+            return;
+        }
+        operator = cmd;
+        ansLabel.setText("Ans: " + formatNumber(firstNum) + " " + operator);
+        startNewNumber = true;
     }
 
-    private void calculate(double number) {
-        switch (lastOperator) {
+    private void calculate() {
+        double secondNum;
+        try {
+            secondNum = Double.parseDouble(display.getText());
+        } catch (NumberFormatException ex) {
+            display.setText("Error");
+            return;
+        }
+
+        double result;
+        switch (operator) {
             case "+":
-                result += number;
+                result = firstNum + secondNum;
                 break;
             case "-":
-                result -= number;
+                result = firstNum - secondNum;
                 break;
-            case "*":
-                result *= number;
+            case "x":
+                result = firstNum * secondNum;
                 break;
-            case "/":
-                if (number == 0) {
+            case "÷":
+                if (secondNum == 0) {
                     display.setText("Error");
-                    result = 0;
+                    ansLabel.setText("Ans: " + formatNumber(firstNum) + " ÷ " + formatNumber(secondNum) + " = Error");
+                    startNewNumber = true;
                     return;
                 }
-                result /= number;
+                result = firstNum / secondNum;
                 break;
-            case "=":
-                result = number;
-                break;
+            default:
+                // if no operator, just show current display
+                ansLabel.setText("Ans: " + formatNumber(secondNum));
+                return;
         }
-        display.setText(String.valueOf(result));
-        currentInput = String.valueOf(result);
+
+        String resStr = formatNumber(result);
+        display.setText(resStr);
+        ansLabel.setText("Ans: " + formatNumber(firstNum) + " " + operator + " " + formatNumber(secondNum) + " = " + resStr);
+        startNewNumber = true;
+        operator = "";
+    }
+
+    private String formatNumber(double v) {
+        if (v == (long) v) return String.valueOf((long) v);
+        return String.valueOf(v);
+    }
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(calc::new);
     }
 }
