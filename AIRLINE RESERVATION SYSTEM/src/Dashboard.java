@@ -551,6 +551,14 @@ public class Dashboard {
                     midsection_panel_header.setVisible(true);
                     midsection_panel.setVisible(true);
 
+                    comboBox1.removeAllItems();
+                    comboBox1.addItem("Economy(" + get_EconomySeats(db_connection()) + " seat/s)");
+                    comboBox1.addItem("Premium_Economy(" + get_PremiumEconomySeats(db_connection()) + " seat/s)");
+                    comboBox1.addItem("Business(" + get_BusinessSeats(db_connection()) + " seat/s)");
+
+
+
+
                 }
                 else {
                     JOptionPane.showMessageDialog(null, "SELECTED SEAT CLASS IS INVALID");
